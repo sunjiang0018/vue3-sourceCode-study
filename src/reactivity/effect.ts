@@ -1,27 +1,58 @@
-class ReactiveEffect {
-  private _fn: () => void;
+import { extend } from '../shared';
+import { EffectOptions, Runner } from './types';
 
-  constructor(fn: () => void) {
+export class ReactiveEffect {
+  private _fn: Function;
+  private isActive = true;
+
+  public deps: Set<ReactiveEffect>[] = [];
+
+  public onStop?: ()=>void;
+
+  constructor(fn: Function) {
     this._fn = fn;
   }
 
   run() {
     activeEffect = this;
-    this._fn();
+    const result =  this._fn();
+    activeEffect = undefined;
+    return result;
   }
+
+  stop() {
+    if (this.isActive) {
+      cleanupEffect(this);
+      this.onStop?.()
+      this.isActive = false;
+    }
+  }
+}
+
+function cleanupEffect(effect: ReactiveEffect) {
+  effect.deps.forEach((dep) => {
+    dep.delete(effect);
+  });
 }
 
 let activeEffect: ReactiveEffect | undefined;
 
-export function effect(fn: () => void) {
+export function effect(fn: Function, options?: EffectOptions) {
   const _effect = new ReactiveEffect(fn);
 
+  extend(_effect, options);
+
   _effect.run();
+
+  const runner = _effect.run.bind(_effect);
+  (runner as Runner).effect = _effect;
+
+  return runner as Runner;
 }
 
 const targetMap = new Map<
   Object,
-  Map<string | Symbol, Set<typeof activeEffect>>
+  Map<string | Symbol, Set<ReactiveEffect>>
 >();
 export function track<T extends Object>(target: T, key: string | Symbol) {
   let depsMap = targetMap.get(target);
@@ -38,7 +69,10 @@ export function track<T extends Object>(target: T, key: string | Symbol) {
     depsMap.set(key, deps);
   }
 
+  if (!activeEffect) return;
+
   deps.add(activeEffect);
+  activeEffect.deps.push(deps);
 }
 
 export function trigger<T extends Object>(target: T, key: string | Symbol) {
@@ -51,7 +85,14 @@ export function trigger<T extends Object>(target: T, key: string | Symbol) {
   if (!deps) return;
 
   for (const effect of deps) {
-    effect?.run();
+    if (effect?.scheduler) {
+      effect.scheduler();
+    } else {
+      effect?.run();
+    }
   }
-  
+}
+
+export function stop(runner: Runner) {
+  runner.effect.stop();
 }
