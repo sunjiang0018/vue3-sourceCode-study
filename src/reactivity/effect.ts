@@ -8,6 +8,8 @@ export class ReactiveEffect {
   public deps: Set<ReactiveEffect>[] = [];
 
   public onStop?: ()=>void;
+  public scheduler?: ()=>void;
+
 
   constructor(fn: Function) {
     this._fn = fn;
@@ -52,9 +54,9 @@ export function effect(fn: Function, options?: EffectOptions) {
 
 const targetMap = new Map<
   Object,
-  Map<string | Symbol, Set<ReactiveEffect>>
+  Map<PropertyKey, Set<ReactiveEffect>>
 >();
-export function track<T extends Object>(target: T, key: string | Symbol) {
+export function track<T extends Object>(target: T, key: PropertyKey) {
   let depsMap = targetMap.get(target);
 
   if (!depsMap) {
@@ -75,7 +77,7 @@ export function track<T extends Object>(target: T, key: string | Symbol) {
   activeEffect.deps.push(deps);
 }
 
-export function trigger<T extends Object>(target: T, key: string | Symbol) {
+export function trigger<T extends Object>(target: T, key: PropertyKey) {
   const depsMap = targetMap.get(target);
 
   if (!depsMap) return;
