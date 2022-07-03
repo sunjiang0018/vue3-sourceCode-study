@@ -7,25 +7,32 @@ export class ReactiveEffect {
 
   public deps: Set<ReactiveEffect>[] = [];
 
-  public onStop?: ()=>void;
-  public scheduler?: ()=>void;
-
+  public onStop?: () => void;
+  public scheduler?: () => void;
 
   constructor(fn: Function) {
     this._fn = fn;
   }
 
   run() {
+    if (!this.isActive) {
+      return this._fn();
+    }
+
     activeEffect = this;
-    const result =  this._fn();
-    activeEffect = undefined;
+    shouldTrack = true;
+
+    const result = this._fn();
+
+    shouldTrack = false;
+
     return result;
   }
 
   stop() {
     if (this.isActive) {
       cleanupEffect(this);
-      this.onStop?.()
+      this.onStop?.();
       this.isActive = false;
     }
   }
@@ -35,9 +42,11 @@ function cleanupEffect(effect: ReactiveEffect) {
   effect.deps.forEach((dep) => {
     dep.delete(effect);
   });
+  effect.deps.length = 0;
 }
 
-let activeEffect: ReactiveEffect | undefined;
+let activeEffect: ReactiveEffect;
+let shouldTrack: boolean;
 
 export function effect(fn: Function, options?: EffectOptions) {
   const _effect = new ReactiveEffect(fn);
@@ -52,11 +61,10 @@ export function effect(fn: Function, options?: EffectOptions) {
   return runner as Runner;
 }
 
-const targetMap = new Map<
-  Object,
-  Map<PropertyKey, Set<ReactiveEffect>>
->();
+const targetMap = new Map<Object, Map<PropertyKey, Set<ReactiveEffect>>>();
 export function track<T extends Object>(target: T, key: PropertyKey) {
+  if (!isTracking()) return;
+
   let depsMap = targetMap.get(target);
 
   if (!depsMap) {
@@ -71,10 +79,14 @@ export function track<T extends Object>(target: T, key: PropertyKey) {
     depsMap.set(key, deps);
   }
 
-  if (!activeEffect) return;
+  if (deps.has(activeEffect)) return;
 
   deps.add(activeEffect);
   activeEffect.deps.push(deps);
+}
+
+function isTracking() {
+  return shouldTrack && !activeEffect !== undefined;
 }
 
 export function trigger<T extends Object>(target: T, key: PropertyKey) {
