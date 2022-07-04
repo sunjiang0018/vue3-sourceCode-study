@@ -72,20 +72,24 @@ export function track<T extends Object>(target: T, key: PropertyKey) {
     targetMap.set(target, depsMap);
   }
 
-  let deps = depsMap.get(key);
+  let dep = depsMap.get(key);
 
-  if (!deps) {
-    deps = new Set();
-    depsMap.set(key, deps);
+  if (!dep) {
+    dep = new Set();
+    depsMap.set(key, dep);
   }
 
-  if (deps.has(activeEffect)) return;
+  if (dep.has(activeEffect)) return;
 
-  deps.add(activeEffect);
-  activeEffect.deps.push(deps);
+  trackEffect(dep);
 }
 
-function isTracking() {
+export function trackEffect(dep: Set<any>) {
+  dep.add(activeEffect);
+  activeEffect.deps.push(dep);
+}
+
+export function isTracking() {
   return shouldTrack && !activeEffect !== undefined;
 }
 
@@ -94,11 +98,15 @@ export function trigger<T extends Object>(target: T, key: PropertyKey) {
 
   if (!depsMap) return;
 
-  const deps = depsMap.get(key);
+  const dep = depsMap.get(key);
 
-  if (!deps) return;
+  if (!dep) return;
 
-  for (const effect of deps) {
+  triggerEffect(dep);
+}
+
+export function triggerEffect(dep: Set<any>) {
+  for (const effect of dep) {
     if (effect?.scheduler) {
       effect.scheduler();
     } else {
