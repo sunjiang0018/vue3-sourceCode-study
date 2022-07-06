@@ -8,9 +8,7 @@ export class ReactiveEffect {
   public deps: Set<ReactiveEffect>[] = [];
 
   public onStop?: () => void;
-  public scheduler?: () => void;
-
-  constructor(fn: Function) {
+  constructor(fn: Function, public scheduler?: () => void) {
     this._fn = fn;
   }
 
