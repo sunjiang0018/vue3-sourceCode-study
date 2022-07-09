@@ -1,3 +1,5 @@
+import { PublicInstanceHandlers } from './componmentPublicInstance';
+
 export function createComponmentInstance(vnode: any) {
   return {
     vnode,
@@ -13,11 +15,14 @@ export function setupComponment(instance: any) {
 
 function setupSatefulComponment(instance: any) {
   const componment = instance.type;
+
+  instance.proxy = new Proxy({ _: instance }, PublicInstanceHandlers);
+
   if (componment.setup) {
     const setupResult = componment.setup();
 
     handleSetupResult(instance, setupResult);
-    finishComponentSetup(instance)
+    finishComponentSetup(instance);
   }
 }
 
@@ -26,10 +31,9 @@ function handleSetupResult(instance: any, setupResult: any) {
     instance.setupState = setupResult;
   }
 }
-function finishComponentSetup(instance:any) {
-  const componment = instance.type
-  if(componment.render){
-    instance.render = componment.render
+function finishComponentSetup(instance: any) {
+  const componment = instance.type;
+  if (componment.render) {
+    instance.render = componment.render;
   }
 }
-
