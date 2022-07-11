@@ -1,4 +1,5 @@
 import { isArray, isObject } from '../shared';
+import { ShapeFlags } from '../shared/shapeFlags';
 import { createComponmentInstance, setupComponment } from './componment';
 
 export function render(vnode: any, container: any) {
@@ -6,9 +7,10 @@ export function render(vnode: any, container: any) {
 }
 
 function patch(vnode: any, container: any) {
-  if (isObject(vnode.type)) {
+  const { shapeFlags } = vnode;
+  if (shapeFlags & ShapeFlags.STATEFUL_COMPONMENT) {
     processComponment(vnode, container);
-  } else {
+  } else if (shapeFlags & ShapeFlags.ELEMENT) {
     processElement(vnode, container);
   }
 }
@@ -34,13 +36,20 @@ function processElement(vnode: any, container: Element) {
       if (key === 'class' && isArray(val)) {
         val = val.join(' ');
       }
-      el.setAttribute(key, val);
+      const isOn = (attr: string) => /on[A-Z]/.test(attr);
+      if (isOn(key)) {
+        const eventName = key.slice(2).toLocaleLowerCase()
+        el.addEventListener(eventName, val);
+      } else {
+        el.setAttribute(key, val);
+      }
     }
   }
 
-  if (isArray(children)) {
+  const { shapeFlags } = vnode;
+  if (shapeFlags & ShapeFlags.ARRAY_CHILDREN) {
     mountChildren(children, el);
-  } else {
+  } else if (shapeFlags && ShapeFlags.TEXT_CHILDREN) {
     el.textContent = children;
   }
 
@@ -54,11 +63,9 @@ function mountChildren(children: any[], el: Element) {
 }
 
 function setupRenderEffect(instance: any, container: any) {
-  const {proxy, vnode} = instance;
+  const { proxy, vnode } = instance;
   const subTree = instance.render.call(proxy);
   patch(subTree, container);
 
-  vnode.el = subTree.el
-
-
+  vnode.el = subTree.el;
 }
