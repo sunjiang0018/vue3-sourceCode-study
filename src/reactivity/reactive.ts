@@ -1,3 +1,4 @@
+import { isObject } from './../shared/index';
 import {
   mutableHandlers,
   readonlyHandlers,
@@ -37,5 +38,8 @@ function createActiveObject<T extends Object>(
   object: T,
   baseHandlers: ProxyHandler<T>
 ): T {
+  if (!isObject(object)) {
+    console.warn(`target:${object}, 不是一个对象`);
+  }
   return new Proxy(object, baseHandlers);
 }

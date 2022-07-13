@@ -1,13 +1,17 @@
+import { shallowReadonly } from '../reactivity/reactive';
+import { initProps } from './compomentProps';
 import { PublicInstanceHandlers } from './componmentPublicInstance';
 
 export function createComponmentInstance(vnode: any) {
   return {
     vnode,
     type: vnode.type,
+    setupState: {},
+    props: {},
   };
 }
 export function setupComponment(instance: any) {
-  // initProps
+  initProps(instance, instance.vnode.props);
   // initSlots
 
   setupSatefulComponment(instance);
@@ -19,7 +23,7 @@ function setupSatefulComponment(instance: any) {
   instance.proxy = new Proxy({ _: instance }, PublicInstanceHandlers);
 
   if (componment.setup) {
-    const setupResult = componment.setup();
+    const setupResult = componment.setup(shallowReadonly(instance.props));
 
     handleSetupResult(instance, setupResult);
     finishComponentSetup(instance);

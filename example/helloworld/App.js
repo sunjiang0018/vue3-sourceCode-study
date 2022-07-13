@@ -1,4 +1,5 @@
 import { h } from '../../lib/vue-study.esm.js';
+import Foo from './Foo.js';
 
 window.self = null;
 export default {
@@ -19,6 +20,7 @@ export default {
       [
         h('p', { class: 'red' }, 'title'),
         h('span', { class: ['blue', 'content'] }, `hello, ${this.msg}`),
+        h(Foo, { count: 1 }),
       ]
     );
   },
