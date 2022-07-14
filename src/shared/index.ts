@@ -14,3 +14,17 @@ export const hasChanged = (value: any, newValue: any) => {
 export const hasOwn = (target: Object, key: PropertyKey) => {
   return Object.prototype.hasOwnProperty.call(target, key);
 };
+
+export const toHandlerKey = (str: string) => {
+  return `on${capitalize(str)}`;
+};
+
+export const capitalize = (str: string) => {
+  return str.charAt(0).toLocaleUpperCase() + str.slice(1);
+};
+
+export const camelize = (str: string) => {
+  return str.replace(/-(\w)/g, (_, c: string) => {
+    return c.toLocaleUpperCase();
+  });
+};
