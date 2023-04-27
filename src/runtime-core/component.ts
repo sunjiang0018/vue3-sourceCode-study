@@ -2,6 +2,7 @@ import { shallowReadonly } from '../reactivity/reactive';
 import { emit } from './componentEmit';
 import { initProps } from './componentProps';
 import { PublicInstanceHandlers } from './componentPublicInstance';
+import { initSlots } from './componentSlots';
 
 export function createComponentInstance(vnode: any) {
   const component = {
@@ -9,6 +10,7 @@ export function createComponentInstance(vnode: any) {
     type: vnode.type,
     setupState: {},
     props: {},
+    slots: {},
     emit: () => {},
   };
 
@@ -18,18 +20,18 @@ export function createComponentInstance(vnode: any) {
 }
 export function setupComponent(instance: any) {
   initProps(instance, instance.vnode.props);
-  // initSlots
+  initSlots(instance, instance.vnode.children)
 
   setupStatefulComponent(instance);
 }
 
 function setupStatefulComponent(instance: any) {
-  const componment = instance.type;
+  const component = instance.type;
 
   instance.proxy = new Proxy({ _: instance }, PublicInstanceHandlers);
 
-  if (componment.setup) {
-    const setupResult = componment.setup(shallowReadonly(instance.props), {
+  if (component.setup) {
+    const setupResult = component.setup(shallowReadonly(instance.props), {
       emit: instance.emit.bind(null, instance),
     });
 
@@ -44,8 +46,8 @@ function handleSetupResult(instance: any, setupResult: any) {
   }
 }
 function finishComponentSetup(instance: any) {
-  const componment = instance.type;
-  if (componment.render) {
-    instance.render = componment.render;
+  const component = instance.type;
+  if (component.render) {
+    instance.render = component.render;
   }
 }

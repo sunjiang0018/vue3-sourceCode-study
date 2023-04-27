@@ -2,22 +2,28 @@ import { isArray, isObject } from '../shared';
 import { ShapeFlags } from '../shared/shapeFlags';
 
 export function createVNode(type: any, props?: any, children?: any) {
-  const VNode = {
+  const vnode = {
     type,
     props,
-    shapeFlags: getShapeFlages(type),
+    shapeFlags: getShapeFlags(type),
     children,
   };
 
   if (isArray(children)) {
-    VNode.shapeFlags |= ShapeFlags.ARRAY_CHILDREN;
+    vnode.shapeFlags |= ShapeFlags.ARRAY_CHILDREN;
   } else if (typeof children === 'string') {
-    VNode.shapeFlags |= ShapeFlags.TEXT_CHILDREN;
+    vnode.shapeFlags |= ShapeFlags.TEXT_CHILDREN;
   }
-  return VNode;
+
+  if(vnode.shapeFlags & ShapeFlags.STATEFUL_COMPONENT ){
+    if(isObject(children)){
+      vnode.shapeFlags |= ShapeFlags.SLOT_CHILDREN;
+    }
+  }
+  return vnode;
 }
 
-function getShapeFlages(type: any) {
+function getShapeFlags(type: any) {
   if (isObject(type)) {
     return ShapeFlags.STATEFUL_COMPONENT;
   } else {

@@ -1,6 +1,7 @@
 import { hasOwn } from '../shared/index';
 const publicPropertiesMap: Record<PropertyKey, Function> = {
   $el: (i: any) => i.vnode.el,
+  $slots:(i:any) => i.slots
 };
 
 export const PublicInstanceHandlers = {
