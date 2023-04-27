@@ -19,7 +19,7 @@ export function createVNode(type: any, props?: any, children?: any) {
 
 function getShapeFlages(type: any) {
   if (isObject(type)) {
-    return ShapeFlags.STATEFUL_COMPONMENT;
+    return ShapeFlags.STATEFUL_COMPONENT;
   } else {
     return ShapeFlags.ELEMENT;
   }

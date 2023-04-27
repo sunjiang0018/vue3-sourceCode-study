@@ -1,6 +1,6 @@
-import { isArray, isObject } from '../shared';
+import { isArray } from '../shared';
 import { ShapeFlags } from '../shared/shapeFlags';
-import { createComponmentInstance, setupComponment } from './componment';
+import { createComponentInstance, setupComponent } from './component';
 
 export function render(vnode: any, container: any) {
   patch(vnode, container);
@@ -8,20 +8,20 @@ export function render(vnode: any, container: any) {
 
 function patch(vnode: any, container: any) {
   const { shapeFlags } = vnode;
-  if (shapeFlags & ShapeFlags.STATEFUL_COMPONMENT) {
-    processComponment(vnode, container);
+  if (shapeFlags & ShapeFlags.STATEFUL_COMPONENT) {
+    processComponent(vnode, container);
   } else if (shapeFlags & ShapeFlags.ELEMENT) {
     processElement(vnode, container);
   }
 }
-function processComponment(vnode: any, container: any) {
-  mountComponment(vnode, container);
+function processComponent(vnode: any, container: any) {
+  mountComponent(vnode, container);
 }
 
-function mountComponment(initialVNode: any, container: any) {
-  const instance = createComponmentInstance(initialVNode);
+function mountComponent(initialVNode: any, container: any) {
+  const instance = createComponentInstance(initialVNode);
 
-  setupComponment(instance);
+  setupComponent(instance);
   setupRenderEffect(instance, container);
 }
 

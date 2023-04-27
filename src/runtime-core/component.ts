@@ -1,10 +1,10 @@
 import { shallowReadonly } from '../reactivity/reactive';
-import { emit } from './componmentEmit';
-import { initProps } from './componmentProps';
-import { PublicInstanceHandlers } from './componmentPublicInstance';
+import { emit } from './componentEmit';
+import { initProps } from './componentProps';
+import { PublicInstanceHandlers } from './componentPublicInstance';
 
-export function createComponmentInstance(vnode: any) {
-  const componment = {
+export function createComponentInstance(vnode: any) {
+  const component = {
     vnode,
     type: vnode.type,
     setupState: {},
@@ -12,18 +12,18 @@ export function createComponmentInstance(vnode: any) {
     emit: () => {},
   };
 
-  componment.emit = emit as any;
+  component.emit = emit as any;
 
-  return componment;
+  return component;
 }
-export function setupComponment(instance: any) {
+export function setupComponent(instance: any) {
   initProps(instance, instance.vnode.props);
   // initSlots
 
-  setupSatefulComponment(instance);
+  setupStatefulComponent(instance);
 }
 
-function setupSatefulComponment(instance: any) {
+function setupStatefulComponent(instance: any) {
   const componment = instance.type;
 
   instance.proxy = new Proxy({ _: instance }, PublicInstanceHandlers);

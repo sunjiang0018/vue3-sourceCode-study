@@ -1,4 +1,4 @@
-import { hasOwn } from './../shared/index';
+import { hasOwn } from '../shared/index';
 const publicPropertiesMap: Record<PropertyKey, Function> = {
   $el: (i: any) => i.vnode.el,
 };
