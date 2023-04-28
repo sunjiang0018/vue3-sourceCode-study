@@ -1,4 +1,4 @@
-import { h, renderSlots } from '../../lib/vue-study.esm.js';
+import { createTextVNode, h, renderSlots } from '../../lib/vue-study.esm.js';
 
 export default {
   setup(props, { emit }) {},
@@ -7,6 +7,7 @@ export default {
     return h('div', {}, [
       renderSlots(this.$slots, 'header', { age: 30 }),
       p,
+      createTextVNode("textNode"),
       renderSlots(this.$slots, 'footer'),
     ]);
   },

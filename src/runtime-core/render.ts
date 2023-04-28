@@ -1,17 +1,28 @@
 import { isArray } from '../shared';
 import { ShapeFlags } from '../shared/shapeFlags';
 import { createComponentInstance, setupComponent } from './component';
+import { Fragment,Text } from './vnode';
 
 export function render(vnode: any, container: any) {
   patch(vnode, container);
 }
 
 function patch(vnode: any, container: any) {
-  const { shapeFlags } = vnode;
-  if (shapeFlags & ShapeFlags.STATEFUL_COMPONENT) {
-    processComponent(vnode, container);
-  } else if (shapeFlags & ShapeFlags.ELEMENT) {
-    processElement(vnode, container);
+  const { type, shapeFlags } = vnode;
+  switch (type) {
+    case Fragment:
+      processFragment(vnode, container);
+      break;
+    case Text:
+      processText(vnode, container);
+      break;
+    default:
+      if (shapeFlags & ShapeFlags.STATEFUL_COMPONENT) {
+        processComponent(vnode, container);
+      } else if (shapeFlags & ShapeFlags.ELEMENT) {
+        processElement(vnode, container);
+      }
+      break;
   }
 }
 function processComponent(vnode: any, container: any) {
@@ -38,7 +49,7 @@ function processElement(vnode: any, container: Element) {
       }
       const isOn = (attr: string) => /on[A-Z]/.test(attr);
       if (isOn(key)) {
-        const eventName = key.slice(2).toLocaleLowerCase()
+        const eventName = key.slice(2).toLocaleLowerCase();
         el.addEventListener(eventName, val);
       } else {
         el.setAttribute(key, val);
@@ -68,4 +79,14 @@ function setupRenderEffect(instance: any, container: any) {
   patch(subTree, container);
 
   vnode.el = subTree.el;
+}
+function processFragment(vnode: any, container: any) {
+  const { children } = vnode;
+  mountChildren(children, container);
+}
+
+function processText(vnode: any, container: any) {
+  const { children } = vnode;
+  const textNode = (vnode.el = document.createTextNode(children));
+  container.append(textNode);
 }
