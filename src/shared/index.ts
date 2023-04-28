@@ -3,6 +3,9 @@ export const extend = Object.assign;
 export const isObject = (obj: any) => {
   return obj !== undefined && obj !== null && typeof obj === 'object';
 };
+export const isFunction = (fn: any): fn is Function => {
+  return typeof fn === 'function';
+};
 
 export const isArray = (obj: any) => {
   return Array.isArray(obj);
